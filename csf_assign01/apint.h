@@ -12,6 +12,8 @@
 
 typedef struct {
 	/* TODO: representation */
+	uint64_t * bitString;
+	size_t length;
 } ApInt;
 
 /* Constructors and destructors */
