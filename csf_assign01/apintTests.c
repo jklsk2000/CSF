@@ -25,6 +25,12 @@ typedef struct {
 	/* TODO: add additional fields of test fixture */
 
 	ApInt *hex97;
+	ApInt *hex3500;
+	ApInt *hexLower3500;
+	ApInt *hexMixed3500;
+	ApInt *hex68Bit;
+	ApInt *hex128Bit;
+	ApInt *hexMax128Bit;
 
 } TestObjs;
 
@@ -33,12 +39,15 @@ void cleanup(TestObjs *objs);
 
 void testCreateFromU64(TestObjs *objs);
 void testHighestBitSet(TestObjs *objs);
-// void testLshiftN(TestObjs *objs);
+void testLshiftN(TestObjs *objs);
 // void testCompare(TestObjs *objs);
 // void testFormatAsHex(TestObjs *objs);
 // void testAdd(TestObjs *objs);
 // void testSub(TestObjs *objs);
 /* TODO: add more test function prototypes */
+void testCreateFromHex(TestObjs *objs);
+void testLshift(TestObjs *objs);
+void testLshiftNGreaterThan64(TestObjs *objs);
 
 int main(int argc, char **argv) {
 	TEST_INIT();
@@ -52,13 +61,17 @@ int main(int argc, char **argv) {
 	}
 
 	TEST(testCreateFromU64);
-	// TEST(testHighestBitSet);
-	// TEST(testLshiftN);
+	TEST(testHighestBitSet);
+	TEST(testLshiftN);
 	// TEST(testCompare);
 	// TEST(testFormatAsHex);
 	// TEST(testAdd);
 	// TEST(testSub);
 	/* TODO: use TEST macro to execute more test functions */
+
+	TEST(testCreateFromHex);
+	TEST(testLshift);
+	TEST(testLshiftNGreaterThan64);
 
 	TEST_FINI();
 }
@@ -71,7 +84,14 @@ TestObjs *setup(void) {
 	objs->max1 = apint_create_from_u64(0xFFFFFFFFFFFFFFFFUL);
 	/* TODO: initialize additional members of test fixture */
 
+	//testCreateFromHex
 	objs->hex97 = apint_create_from_hex("61");
+	objs->hex3500 = apint_create_from_hex("DAC");
+	objs->hexLower3500 = apint_create_from_hex("dac");
+	objs->hexMixed3500 = apint_create_from_hex("DaC");
+	objs->hex68Bit = apint_create_from_hex("8A0293CBB55226D7C");
+	objs->hex128Bit = apint_create_from_hex("11027b978d0975748a43c2abd45fcd57");
+	objs->hexMax128Bit = apint_create_from_hex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
 	return objs;
 }
@@ -84,6 +104,12 @@ void cleanup(TestObjs *objs) {
 	/* TODO: destroy additional members of test fixture */
 
 	apint_destroy(objs->hex97);
+	apint_destroy(objs->hex3500);
+	apint_destroy(objs->hexLower3500);
+	apint_destroy(objs->hexMixed3500);
+	apint_destroy(objs->hex68Bit);
+	apint_destroy(objs->hex128Bit);
+	apint_destroy(objs->hexMax128Bit);
 
 	free(objs);
 }
@@ -93,36 +119,33 @@ void testCreateFromU64(TestObjs *objs) {
 	ASSERT(1UL == apint_get_bits(objs->ap1, 0));
 	ASSERT(110660361UL == apint_get_bits(objs->ap110660361, 0));
 	ASSERT(0xFFFFFFFFFFFFFFFFUL == apint_get_bits(objs->max1, 0));
-
-	ASSERT(97UL == apint_get_bits(objs->hex97, 0));
-
 }
 
-// void testHighestBitSet(TestObjs *objs) {
-// 	ASSERT(-1 == apint_highest_bit_set(objs->ap0));
-// 	ASSERT(0 == apint_highest_bit_set(objs->ap1));
-// 	ASSERT(26 == apint_highest_bit_set(objs->ap110660361));
-// 	ASSERT(63 == apint_highest_bit_set(objs->max1));
-// }
+void testHighestBitSet(TestObjs *objs) {
+	ASSERT(-1 == apint_highest_bit_set(objs->ap0));
+	ASSERT(0 == apint_highest_bit_set(objs->ap1));
+	ASSERT(26 == apint_highest_bit_set(objs->ap110660361));
+	ASSERT(63 == apint_highest_bit_set(objs->max1));
+}
 
-// void testLshiftN(TestObjs *objs) {
-// 	ApInt *result;
+void testLshiftN(TestObjs *objs) {
+	ApInt *result;
 
-// 	result = apint_lshift_n(objs->ap0, 17);
-// 	ASSERT(0UL == apint_get_bits(result, 0));
-// 	ASSERT(0UL == apint_get_bits(result, 1));
-// 	apint_destroy(result);
+	result = apint_lshift_n(objs->ap0, 17);
+	ASSERT(0UL == apint_get_bits(result, 0));
+	ASSERT(0UL == apint_get_bits(result, 1));
+	apint_destroy(result);
 
-// 	result = apint_lshift_n(objs->ap1, 17);
-// 	ASSERT(0x20000UL == apint_get_bits(result, 0));
-// 	ASSERT(0UL == apint_get_bits(result, 1));
-// 	apint_destroy(result);
+	result = apint_lshift_n(objs->ap1, 17);
+	ASSERT(0x20000UL == apint_get_bits(result, 0));
+	ASSERT(0UL == apint_get_bits(result, 1));
+	apint_destroy(result);
 
-// 	result = apint_lshift_n(objs->ap110660361, 17);
-// 	ASSERT(0xD3116120000UL == apint_get_bits(result, 0));
-// 	ASSERT(0UL == apint_get_bits(result, 1));
-// 	apint_destroy(result);
-// }
+	result = apint_lshift_n(objs->ap110660361, 17);
+	ASSERT(0xD3116120000UL == apint_get_bits(result, 0));
+	ASSERT(0UL == apint_get_bits(result, 1));
+	apint_destroy(result);
+}
 
 // void testCompare(TestObjs *objs) {
 // 	/* 1 > 0 */
@@ -230,3 +253,69 @@ void testCreateFromU64(TestObjs *objs) {
 // }
 
 /* TODO: add more test functions */
+
+void testCreateFromHex(TestObjs *objs) {
+	ASSERT(97UL == apint_get_bits(objs->hex97, 0));
+	ASSERT(3500UL == apint_get_bits(objs->hex3500, 0));
+	ASSERT(3500UL == apint_get_bits(objs->hexLower3500, 0));
+	ASSERT(3500UL == apint_get_bits(objs->hexMixed3500, 0));
+	ASSERT(11540822295398477180UL == apint_get_bits(objs->hex68Bit, 0));
+	ASSERT(8UL == apint_get_bits(objs->hex68Bit, 1));
+	ASSERT(9963020843931913559UL == apint_get_bits(objs->hex128Bit, 0));
+	ASSERT(1225677939434681716UL == apint_get_bits(objs->hex128Bit, 1));
+	ASSERT(0xFFFFFFFFFFFFFFFFUL == apint_get_bits(objs->hexMax128Bit, 0));
+	ASSERT(0xFFFFFFFFFFFFFFFFUL == apint_get_bits(objs->hexMax128Bit, 1));
+}
+
+void testLshift(TestObjs *objs) {
+	ApInt * result;
+	
+	result = apint_lshift(objs->ap0);
+	ASSERT(0UL == apint_get_bits(result, 0));
+	apint_destroy(result);
+
+	result = apint_lshift(objs->ap1);
+	ASSERT(2UL == apint_get_bits(result, 0));
+	apint_destroy(result);
+
+	result = apint_lshift(objs->ap110660361);
+	ASSERT(221320722UL == apint_get_bits(result, 0));
+	apint_destroy(result);
+
+	result = apint_lshift(objs->max1);
+	ASSERT(18446744073709551614UL == apint_get_bits(result, 0));
+	ASSERT(1UL == apint_get_bits(result, 1));
+	apint_destroy(result);
+
+	result = apint_lshift(objs->hex68Bit);
+	ASSERT(4634900517087402744UL == apint_get_bits(result, 0));
+	ASSERT(17UL == apint_get_bits(result, 1));
+	apint_destroy(result);
+
+	result = apint_lshift(objs->hex128Bit);
+	ASSERT(1479297614154275502UL == apint_get_bits(result, 0));
+	ASSERT(2451355878869363433UL == apint_get_bits(result, 1));
+	apint_destroy(result);
+
+	result = apint_lshift(objs->hexMax128Bit);
+	ASSERT(0xFFFFFFFFFFFFFFFEUL == apint_get_bits(result, 0));
+	ASSERT(0xFFFFFFFFFFFFFFFFUL == apint_get_bits(result, 1));
+	ASSERT(1UL == apint_get_bits(result, 2));
+	apint_destroy(result);
+}
+
+void testLshiftNGreaterThan64(TestObjs *objs) {
+	ApInt * result;
+	
+	result = apint_lshift_n(objs->ap1, 65);
+	ASSERT(0UL == apint_get_bits(result, 0));
+	ASSERT(2UL == apint_get_bits(result, 1));
+	apint_destroy(result);
+
+	result = apint_lshift_n(objs->max1, 133);
+	ASSERT(0UL == apint_get_bits(result, 0));
+	ASSERT(0UL == apint_get_bits(result, 1));
+	ASSERT(18446744073709551584UL == apint_get_bits(result, 2));
+	ASSERT(31UL == apint_get_bits(result, 3));
+	apint_destroy(result);
+}

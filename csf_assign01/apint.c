@@ -8,7 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
-#include <inttypes.h>
+#include <math.h>
 #include "apint.h"
 
 ApInt *apint_create_from_u64(uint64_t val) {
@@ -25,24 +25,41 @@ ApInt *apint_create_from_hex(const char *hex) {
 	/* TODO: implement */
 	assert(hex != NULL);
 
-	size_t tempLength = ceil(strlen(hex) / 16);
+	int hexLength = ceil((double) strlen(hex) / 16);
 	int leftover = strlen(hex) % 16;
 
 	ApInt * ap = malloc(sizeof(ApInt));
-	ap->bitString = (uint64_t *) malloc(sizeof(uint64_t) * tempLength);
-	ap->length = tempLength;
+	ap->bitString = (uint64_t *) malloc(sizeof(uint64_t) * hexLength);
+	ap->length = (size_t) hexLength;
 
+	int start;
+	int fArrLen;
 
-	for (int i = 0; i < tempLength - 1; i++) {
-		int start = leftover + 16 * (tempLength - 2 - i);
-		char hexCharArr[16]; 
-		strncpy(hexCharArr, hex + start, 16);
-		ap->bitString[i] = (uint64_t) strtoul(hexCharArr, NULL, 16);
+	for (int i = 0; i < hexLength - 1; i++) {
+		if (leftover == 0) {
+			start = 16 * (hexLength - 1 - i);
+		} else {
+			start = leftover + 16 * (hexLength - 2 -i);
+			if (i == hexLength - 1) {
+				break;
+			}
+		}
+		char hexArr[17];
+		memcpy(hexArr, &hex[start], 16);
+		hexArr[16] = '\0';
+		ap->bitString[i] = (uint64_t) strtoul(hexArr, NULL, 16);
 	}
 
-	char fHexCharArr[leftover];
-	strncpy(fHexCharArr, hex, leftover);
-	ap->bitString[tempLength] = (uint64_t) strtoul(fHexCharArr, NULL, 16);
+	if (leftover == 0) {
+		fArrLen = 17;
+	} else {
+		fArrLen = leftover + 1;
+	}
+
+	char fHexArr[fArrLen];
+	memcpy(fHexArr, hex, fArrLen - 1);
+	fHexArr[fArrLen - 1] = '\0';
+	ap->bitString[hexLength - 1] = (uint64_t) strtoul(fHexArr, NULL, 16);
 
 	return ap;
 }
@@ -64,28 +81,98 @@ uint64_t apint_get_bits(ApInt *ap, unsigned n) {
 	}
 }
 
-//FIX
-// int apint_highest_bit_set(ApInt *ap) {
-// 	/* TODO: implement */
-// 	assert(ap != NULL);
-// 	if (ap->length == 1 && (ap->bitString)[0] == 0) {
-// 		return -1;
-// 	} else {
-// 		return (ap->bitString)[ap->length - 1];
-// 	}
-// }
+int apint_highest_bit_set(ApInt *ap) {
+	/* TODO: implement */
+	assert(ap != NULL);
+	if (ap->length == 1 && (ap->bitString)[0] == 0) {
+		return -1;
+	} else {
 
-// ApInt *apint_lshift(ApInt *ap) {
-// 	/* TODO: implement */
-// 	assert(0);
-// 	return NULL;
-// }
+		uint64_t lastArr = ap->bitString[ap->length - 1];
+		int order = 0;
 
-// ApInt *apint_lshift_n(ApInt *ap, unsigned n) {
-// 	/* TODO: implement */
-// 	assert(0);
-// 	return NULL;
-// }
+		for (int i = 0; i < 64; i++) {
+			if ((lastArr >> i) & 1) {
+				order = i;
+			}
+		}
+
+		int hbs = (ap->length - 1) * 64 + order;
+
+		return hbs;
+	}
+}
+
+ApInt *apint_lshift(ApInt *ap) {
+	/* TODO: implement */
+	assert(ap != NULL);
+
+	// Check if additional index is needed
+	size_t newLength;
+
+	if ((ap->bitString[ap->length - 1] >> 63) & 1) {
+		newLength = ap->length + 1;
+	} else {
+		newLength = ap->length;
+	}
+
+	ApInt * newAp = malloc(sizeof(ApInt));
+	newAp->bitString = (uint64_t *) malloc(sizeof(uint64_t) * newLength);
+	newAp->length = newLength;
+
+	uint64_t msb = (ap->bitString[0] >> 63);
+	(newAp->bitString)[0] = (ap->bitString[0] << 1);
+
+	for (unsigned i = 1; i < ap->length; i++) {
+		(newAp->bitString)[i] = (ap->bitString[i] << 1) | msb;
+		msb = (ap->bitString[i] >> 63);
+	}
+
+	if (newAp->length > ap->length) {
+		newAp->bitString[ap->length] = 1;
+	}
+
+	return newAp;
+}
+
+ApInt *apint_lshift_n(ApInt *ap, unsigned n) {
+	/* TODO: implement */
+	assert(ap != NULL);
+
+	int indexShift = n / 64;
+	int modShift = n % 64;
+
+	size_t newLength;
+
+	if (((ap->bitString)[ap->length - 1] >> (64 - modShift)) != 0) {
+		newLength = ap->length + indexShift + 1;
+	} else {
+		newLength = ap->length + indexShift;
+	}
+
+	ApInt * newAp = malloc(sizeof(ApInt));
+	newAp->bitString = (uint64_t *) malloc(sizeof(uint64_t) * newLength);
+	newAp->length = newLength;
+
+	// Fill LS array elements w/ 0 for >64 shifts
+	for (int i = 0; i < indexShift; i++) {
+		(newAp->bitString)[i] = 0;
+	}
+
+	uint64_t msb = (ap->bitString)[0] >> (64 - modShift);
+	(newAp->bitString)[indexShift] = (ap->bitString)[0] << modShift;
+
+	for (unsigned i = 1; i < ap->length; i++) {
+		(newAp->bitString)[indexShift + i] = ((ap->bitString)[i] << modShift) | msb;
+		msb = (ap->bitString[i] >> (64 - modShift));
+	}
+
+	if (newAp->length > ap->length + indexShift) {
+		newAp->bitString[ap->length + indexShift] = msb;
+	}
+
+	return newAp;
+}
 
 // char *apint_format_as_hex(ApInt *ap) {
 // 	/* TODO: implement */
