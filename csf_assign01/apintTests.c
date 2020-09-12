@@ -41,7 +41,7 @@ void testCreateFromU64(TestObjs *objs);
 void testHighestBitSet(TestObjs *objs);
 void testLshiftN(TestObjs *objs);
 // void testCompare(TestObjs *objs);
-// void testFormatAsHex(TestObjs *objs);
+void testFormatAsHex(TestObjs *objs);
 // void testAdd(TestObjs *objs);
 // void testSub(TestObjs *objs);
 /* TODO: add more test function prototypes */
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 	TEST(testHighestBitSet);
 	TEST(testLshiftN);
 	// TEST(testCompare);
-	// TEST(testFormatAsHex);
+	TEST(testFormatAsHex);
 	// TEST(testAdd);
 	// TEST(testSub);
 	/* TODO: use TEST macro to execute more test functions */
@@ -162,21 +162,25 @@ void testLshiftN(TestObjs *objs) {
 // 	ASSERT(apint_compare(objs->ap1, objs->ap110660361) < 0);
 // }
 
-// void testFormatAsHex(TestObjs *objs) {
-// 	char *s;
+void testFormatAsHex(TestObjs *objs) {
+	char *s;
 
-// 	ASSERT(0 == strcmp("0", (s = apint_format_as_hex(objs->ap0))));
-// 	free(s);
+	ASSERT(0 == strcmp("0", (s = apint_format_as_hex(objs->ap0))));
+	free(s);
 
-// 	ASSERT(0 == strcmp("1", (s = apint_format_as_hex(objs->ap1))));
-// 	free(s);
+	ASSERT(0 == strcmp("1", (s = apint_format_as_hex(objs->ap1))));
+	free(s);
 
-// 	ASSERT(0 == strcmp("6988b09", (s = apint_format_as_hex(objs->ap110660361))));
-// 	free(s);
+	ASSERT(0 == strcmp("6988b09", (s = apint_format_as_hex(objs->ap110660361))));
+	free(s);
 
-// 	ASSERT(0 == strcmp("ffffffffffffffff", (s = apint_format_as_hex(objs->max1))));
-// 	free(s);
-// }
+	ASSERT(0 == strcmp("ffffffffffffffff", (s = apint_format_as_hex(objs->max1))));
+	free(s);
+
+	// Make a new test for this (temporary test)
+	ASSERT(0 == strcmp("8a0293cbb55226d7c", (s = apint_format_as_hex(objs->hex68Bit))));
+	free(s);
+}
 
 // void testAdd(TestObjs *objs) {
 // 	ApInt *sum;

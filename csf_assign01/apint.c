@@ -174,11 +174,54 @@ ApInt *apint_lshift_n(ApInt *ap, unsigned n) {
 	return newAp;
 }
 
-// char *apint_format_as_hex(ApInt *ap) {
-// 	/* TODO: implement */
-// 	assert(0);
-// 	return NULL;
-// }
+char *apint_format_as_hex(ApInt *ap) {
+	/* TODO: implement */
+	assert(ap != NULL);
+
+	char hexArr[17];
+
+	// Find the length of hex chars at the most sig arr element
+	int start = -1;
+	sprintf(hexArr, "%016lx", ap->bitString[ap->length - 1]);
+	for (unsigned i = 0; i < strlen(hexArr); i++) {
+		if (hexArr[i] != '0') {
+			start = i;
+			break;
+		}
+	}
+
+	int fLength;
+	if (start != -1) {
+		fLength = 16 - start;
+	} else {	// val = 0
+		fLength = 1;
+	}
+
+	int totalLength = 16 * (ap->length - 1) + fLength + 1;
+	char * hexString = (char *) malloc(sizeof(char) * totalLength);
+	
+	// Concatenate the most sig arr element to hexString
+	if (start != -1) {
+		// Suppress the leading zeroes
+		char newHexArr[17 - start];
+		memcpy(newHexArr, &hexArr[start], 17 - start);
+		strcat(hexString, newHexArr);
+	} else {
+		if (ap->length == 1) {	// val = 0
+			hexString[0] = '0';
+		}
+	}
+
+	// Concatenate the rest of the arr elements
+	for (int i = ap->length - 2; i >= 0; i--) {
+		sprintf(hexArr, "%016lx", ap->bitString[i]);
+		strcat(hexString, hexArr);
+	}
+
+	hexString[totalLength] = '\0';
+
+	return hexString;
+}
 
 // ApInt *apint_add(const ApInt *a, const ApInt *b) {
 // 	/* TODO: implement */
