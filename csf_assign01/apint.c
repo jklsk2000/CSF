@@ -178,7 +178,7 @@ char *apint_format_as_hex(ApInt *ap) {
 	/* TODO: implement */
 	assert(ap != NULL);
 
-	char hexArr[17];
+	char hexArr[17] = {0};
 
 	// Find the length of hex chars at the most sig arr element
 	int start = -1;
@@ -205,7 +205,7 @@ char *apint_format_as_hex(ApInt *ap) {
 		// Suppress the leading zeroes
 		char newHexArr[17 - start];
 		memcpy(newHexArr, &hexArr[start], 17 - start);
-		strcat(hexString, newHexArr);
+		strcat(hexString, newHexArr); // check this line
 	} else {
 		if (ap->length == 1) {	// val = 0
 			hexString[0] = '0';
@@ -218,16 +218,90 @@ char *apint_format_as_hex(ApInt *ap) {
 		strcat(hexString, hexArr);
 	}
 
-	hexString[totalLength] = '\0';
+	hexString[totalLength - 1] = '\0';
 
 	return hexString;
 }
 
-// ApInt *apint_add(const ApInt *a, const ApInt *b) {
-// 	/* TODO: implement */
-// 	assert(0);
-// 	return NULL;
-// }
+ApInt *apint_add(const ApInt *a, const ApInt *b) {
+	/* TODO: implement */
+	assert(a != NULL && b != NULL);
+
+	size_t sumLength;
+	size_t shortLength;
+	uint64_t * longer;
+
+	if (a->length >= b->length) {
+		sumLength = a->length;
+		longer = a->bitString;
+		shortLength = b->length;
+	} else {
+		sumLength = b->length;
+		longer = b->bitString;
+		shortLength = a->length;
+	}
+
+	// Create an oversized array in case of overflow
+	ApInt * sum = malloc(sizeof(ApInt));
+	sum->bitString = malloc(sizeof(uint64_t) * (sumLength + 1));
+	sum->length = sumLength + 1;
+
+	int overflow = 0;
+
+	// Both a and b have index elements
+	for (unsigned i = 0; i < shortLength; i++) {
+		uint64_t aValue = a->bitString[i];
+		uint64_t bValue = b->bitString[i];
+		uint64_t indexSum;
+
+		if (overflow) {
+			indexSum = aValue + bValue + 1;
+		} else {
+			indexSum = aValue + bValue;
+		}
+
+		if (indexSum < aValue || indexSum < bValue) {
+			overflow = 1;
+		} else {
+			overflow = 0;
+		}
+		sum->bitString[i] = indexSum;
+	}
+
+	// Only one have index elements 
+	// (either a or b is bigger than the other)
+	for (unsigned i = shortLength; i < sumLength; i++) {
+		uint64_t value = longer[i];
+		uint64_t indexSum;
+		
+		if (overflow) {
+			indexSum = value + 1;
+		} else {
+			indexSum = value;
+		}
+
+		if (indexSum < value) {
+			overflow = 1;
+		} else {
+			overflow = 0;
+		}
+		sum->bitString[i] = indexSum;
+	}
+
+	// Add one more arr index if overflow, or else resize the arr
+	if (overflow) {
+		sum->bitString[sumLength] = 1UL;
+	} else {
+		uint64_t * temp = sum->bitString;
+		sum->bitString = realloc(sum->bitString, sizeof(uint64_t) * sumLength);
+		sum->length = sumLength;
+		for (unsigned i = 0; i < sumLength; i++) {
+			(sum->bitString)[i] = temp[i];
+		}
+	}
+
+	return sum;
+}
 
 
 // ApInt *apint_sub(const ApInt *a, const ApInt *b) {
@@ -236,8 +310,25 @@ char *apint_format_as_hex(ApInt *ap) {
 // 	return NULL;
 // }
 
-// int apint_compare(const ApInt *left, const ApInt *right) {
-// 	/* TODO: implement */
-// 	assert(0);
-// 	return 0;
-// }
+int apint_compare(const ApInt *left, const ApInt *right) {
+	/* TODO: implement */
+	assert(left != NULL && right != NULL);
+
+	if (left->length > right->length) {
+		return 1;
+	} else if (left->length < right->length) {
+		return -1;
+	} else {
+		if (left->bitString[left->length - 1] > 
+		right->bitString[right->length - 1]) {
+			return 1;
+		} else if (left->bitString[left->length - 1] < 
+		right->bitString[right->length - 1]) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}
+
+	return 0;
+}
