@@ -178,38 +178,33 @@ char *apint_format_as_hex(ApInt *ap) {
 	/* TODO: implement */
 	assert(ap != NULL);
 
-	char hexArr[17] = {0};
+	int isZero = 0;
+	int hbs = apint_highest_bit_set(ap);
 
-	// Find the length of hex chars at the most sig arr element
-	int start = -1;
-	sprintf(hexArr, "%016lx", ap->bitString[ap->length - 1]);
-	for (unsigned i = 0; i < strlen(hexArr); i++) {
-		if (hexArr[i] != '0') {
-			start = i;
-			break;
-		}
+	if (hbs == -1) {
+		isZero = 1;
+		hbs = 0;
 	}
 
-	int fLength;
-	if (start != -1) {
-		fLength = 16 - start;
-	} else {	// val = 0
-		fLength = 1;
-	}
-
-	int totalLength = 16 * (ap->length - 1) + fLength + 1;
-	char * hexString = (char *) malloc(sizeof(char) * totalLength);
+	int start = ceil(((hbs % 64) + 1.0) / 4);
 	
-	// Concatenate the most sig arr element to hexString
-	if (start != -1) {
-		// Suppress the leading zeroes
-		char newHexArr[17 - start];
-		memcpy(newHexArr, &hexArr[start], 17 - start);
-		strcat(hexString, newHexArr); // check this line
+	// Extra +1 for the null terminator
+	int totalLength = 16 * (ap->length - 1) + start + 1;
+	char * hexString = (char *) malloc(sizeof(char) * totalLength);
+
+	for (int i = 0; i < totalLength; i++) {
+		hexString[i] = '\0';
+	}
+
+	char hexArr[17] = {0};
+	sprintf(hexArr, "%016lx", ap->bitString[ap->length - 1]);
+
+	if (isZero) {
+		hexString[0] = '0';
 	} else {
-		if (ap->length == 1) {	// val = 0
-			hexString[0] = '0';
-		}
+		char fHexArr[start + 1];
+		memcpy(fHexArr, &hexArr[16 - start], start + 1);
+		strcat(hexString, fHexArr);
 	}
 
 	// Concatenate the rest of the arr elements
@@ -292,23 +287,98 @@ ApInt *apint_add(const ApInt *a, const ApInt *b) {
 	if (overflow) {
 		sum->bitString[sumLength] = 1UL;
 	} else {
-		uint64_t * temp = sum->bitString;
-		sum->bitString = realloc(sum->bitString, sizeof(uint64_t) * sumLength);
-		sum->length = sumLength;
+		ApInt * newSum = malloc(sizeof(ApInt));
+		newSum->bitString = malloc(sizeof(uint64_t) * sumLength);
+		newSum->length = sumLength;
 		for (unsigned i = 0; i < sumLength; i++) {
-			(sum->bitString)[i] = temp[i];
+			newSum->bitString[i] = sum->bitString[i];	// problem area!
 		}
+		apint_destroy(sum);
+		return newSum;
 	}
 
 	return sum;
 }
 
+ApInt *apint_sub(const ApInt *a, const ApInt *b) {
+	assert(a != NULL && b != NULL);
 
-// ApInt *apint_sub(const ApInt *a, const ApInt *b) {
-// 	/* TODO: implement */
-// 	assert(0);
-// 	return NULL;
-// }
+	// Check if subtraction is possible (give unsigned answer)
+	if (apint_compare(a, b) == -1) {
+		return NULL;
+	}
+
+	ApInt * ap = malloc(sizeof(ApInt));
+	ap->bitString = malloc(sizeof(uint64_t) * a->length);
+	ap->length = a->length;
+
+	int underflow = 0;
+
+	// Subtract each arr element and check for underflows
+	for (unsigned i = 0; i < b->length; i++) {
+		uint64_t aval = a->bitString[i];
+		uint64_t bval = b->bitString[i];
+		uint64_t res;
+
+		if (underflow) {
+			res = aval - bval - 1;
+		} else {
+			res = aval - bval;
+		}
+
+		if (aval < bval) {
+			underflow = 1;
+		} else {
+			underflow = 0;
+		}
+
+		ap->bitString[i] = res;
+	}
+
+	// Check underflows for the rest of the arr elements
+	for (unsigned i = b->length; i < a->length; i++) {
+		uint64_t val = a->bitString[i];
+		uint64_t res;
+
+		if (underflow) {
+			res = val - 1;
+		} else {
+			res = val;
+		}
+
+		if (val < res) {
+			underflow = 1;
+		} else {
+			underflow = 0;
+		}
+
+		ap->bitString[i] = res;
+	}
+
+	// Check if the leading arr elements are 0
+	int start = ap->length - 1;
+
+	for (int i = ap->length - 1; i >= 0; i--) {
+		if (ap->bitString[i] != 0UL) {
+			start = i;
+			break;
+		}
+	}
+
+	// Truncate (realloc) the bitString if needed
+	if (start != (int) (ap->length - 1)) {
+		ApInt * newAp = malloc(sizeof(ApInt));
+		newAp->bitString = malloc(sizeof(uint64_t) * (start + 1));
+		newAp->length = start + 1;
+		for (unsigned i = 0; i < newAp->length; i++) {
+			newAp->bitString[i] = ap->bitString[i];
+		}
+		apint_destroy(ap);
+		return newAp;
+	}
+
+	return ap;
+}
 
 int apint_compare(const ApInt *left, const ApInt *right) {
 	/* TODO: implement */

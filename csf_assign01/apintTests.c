@@ -43,8 +43,9 @@ void testLshiftN(TestObjs *objs);
 void testCompare(TestObjs *objs);
 void testFormatAsHex(TestObjs *objs);
 void testAdd(TestObjs *objs);
-// void testSub(TestObjs *objs);
+void testSub(TestObjs *objs);
 /* TODO: add more test function prototypes */
+
 void testCreateFromHex(TestObjs *objs);
 void testLshift(TestObjs *objs);
 void testLshiftNGreaterThan64(TestObjs *objs);
@@ -66,7 +67,7 @@ int main(int argc, char **argv) {
 	TEST(testCompare);
 	TEST(testFormatAsHex);
 	TEST(testAdd);
-	// TEST(testSub);
+	TEST(testSub);
 	/* TODO: use TEST macro to execute more test functions */
 
 	TEST(testCreateFromHex);
@@ -84,7 +85,6 @@ TestObjs *setup(void) {
 	objs->max1 = apint_create_from_u64(0xFFFFFFFFFFFFFFFFUL);
 	/* TODO: initialize additional members of test fixture */
 
-	//testCreateFromHex
 	objs->hex97 = apint_create_from_hex("61");
 	objs->hex3500 = apint_create_from_hex("DAC");
 	objs->hexLower3500 = apint_create_from_hex("dac");
@@ -238,44 +238,44 @@ void testAdd(TestObjs *objs) {
 	free(s);
 }
 
-// void testSub(TestObjs *objs) {
-// 	ApInt *a, *b, *diff;
-// 	char *s;
+void testSub(TestObjs *objs) {
+	ApInt *a, *b, *diff;
+	char *s;
 
-// 	/* subtracting 1 from ffffffffffffffff is fffffffffffffffe */
-// 	diff = apint_sub(objs->max1, objs->ap1);
-// 	ASSERT(0 == strcmp("fffffffffffffffe", (s = apint_format_as_hex(diff))));
-// 	apint_destroy(diff);
-// 	free(s);
+	/* subtracting 1 from ffffffffffffffff is fffffffffffffffe */
+	diff = apint_sub(objs->max1, objs->ap1);
+	ASSERT(0 == strcmp("fffffffffffffffe", (s = apint_format_as_hex(diff))));
+	apint_destroy(diff);
+	free(s);
 
-// 	/* subtracting 0 from 1 is 1 */
-// 	diff = apint_sub(objs->ap1, objs->ap0);
-// 	ASSERT(0 == strcmp("1", (s = apint_format_as_hex(diff))));
-// 	ASSERT(0 == apint_compare(diff, objs->ap1));
-// 	apint_destroy(diff);
-// 	free(s);
+	/* subtracting 0 from 1 is 1 */
+	diff = apint_sub(objs->ap1, objs->ap0);
+	ASSERT(0 == strcmp("1", (s = apint_format_as_hex(diff))));
+	ASSERT(0 == apint_compare(diff, objs->ap1));
+	apint_destroy(diff);
+	free(s);
 
-// 	/* subtracting 1 from 1 is 0 */
-// 	diff = apint_sub(objs->ap1, objs->ap1);
-// 	ASSERT(0 == strcmp("0", (s = apint_format_as_hex(diff))));
-// 	ASSERT(0 == apint_compare(diff, objs->ap0));
-// 	apint_destroy(diff);
-// 	free(s);
+	/* subtracting 1 from 1 is 0 */
+	diff = apint_sub(objs->ap1, objs->ap1);
+	ASSERT(0 == strcmp("0", (s = apint_format_as_hex(diff))));
+	ASSERT(0 == apint_compare(diff, objs->ap0));
+	apint_destroy(diff);
+	free(s);
 
-// 	/* subtracting 1 from 0 can't be represented because it is negative */
-// 	ASSERT(NULL == apint_sub(objs->ap0, objs->ap1));
+	/* subtracting 1 from 0 can't be represented because it is negative */
+	ASSERT(NULL == apint_sub(objs->ap0, objs->ap1));
 
-// 	/* test involving larger values */
-// 	a = apint_create_from_hex("7e35207519b6b06429378631ca460905c19537644f31dc50114e9dc90bb4e4ebc43cfebe6b86d");
-// 	b = apint_create_from_hex("9fa0fb165441ade7cb8b17c3ab3653465e09e8078e09631ec8f6fe3a5b301dc");
-// 	diff = apint_sub(a, b);
-// 	ASSERT(0 == strcmp("7e35207519b6afc4883c6fdd8898213a367d73b918de95f20766963b0251c622cd3ec4633b691",
-// 		(s = apint_format_as_hex(diff))));
-// 	apint_destroy(diff);
-// 	apint_destroy(b);
-// 	apint_destroy(a);
-// 	free(s);
-// }
+	/* test involving larger values */
+	a = apint_create_from_hex("7e35207519b6b06429378631ca460905c19537644f31dc50114e9dc90bb4e4ebc43cfebe6b86d");
+	b = apint_create_from_hex("9fa0fb165441ade7cb8b17c3ab3653465e09e8078e09631ec8f6fe3a5b301dc");
+	diff = apint_sub(a, b);
+	ASSERT(0 == strcmp("7e35207519b6afc4883c6fdd8898213a367d73b918de95f20766963b0251c622cd3ec4633b691",
+		(s = apint_format_as_hex(diff))));
+	apint_destroy(diff);
+	apint_destroy(b);
+	apint_destroy(a);
+	free(s);
+}
 
 /* TODO: add more test functions */
 
