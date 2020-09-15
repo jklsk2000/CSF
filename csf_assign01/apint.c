@@ -12,8 +12,6 @@
 #include "apint.h"
 
 ApInt *apint_create_from_u64(uint64_t val) {
-	/* TODO: implement */
-	assert(1);
 	ApInt * ap = malloc(sizeof(ApInt));
 	ap->bitString = (uint64_t *) malloc(sizeof(uint64_t));
 	ap->length = 1;
@@ -22,7 +20,6 @@ ApInt *apint_create_from_u64(uint64_t val) {
 }
 
 ApInt *apint_create_from_hex(const char *hex) {
-	/* TODO: implement */
 	assert(hex != NULL);
 
 	int hexLength = ceil((double) strlen(hex) / 16);
@@ -65,14 +62,12 @@ ApInt *apint_create_from_hex(const char *hex) {
 }
 
 void apint_destroy(ApInt *ap) {
-	/* TODO: implement */
 	assert(ap != NULL);
 	free(ap->bitString);
 	free(ap);
 }
 
 uint64_t apint_get_bits(ApInt *ap, unsigned n) {
-	/* TODO: implement */
 	assert(1);
 	if (n > ap->length - 1) {
 		return 0;
@@ -82,32 +77,24 @@ uint64_t apint_get_bits(ApInt *ap, unsigned n) {
 }
 
 int apint_highest_bit_set(ApInt *ap) {
-	/* TODO: implement */
 	assert(ap != NULL);
 	if (ap->length == 1 && (ap->bitString)[0] == 0) {
 		return -1;
 	} else {
-
 		uint64_t lastArr = ap->bitString[ap->length - 1];
 		int order = 0;
-
 		for (int i = 0; i < 64; i++) {
 			if ((lastArr >> i) & 1) {
 				order = i;
 			}
 		}
-
-		int hbs = (ap->length - 1) * 64 + order;
-
-		return hbs;
+		return (ap->length - 1) * 64 + order;
 	}
 }
 
 ApInt *apint_lshift(ApInt *ap) {
-	/* TODO: implement */
 	assert(ap != NULL);
 
-	// Check if additional index is needed
 	size_t newLength;
 
 	if ((ap->bitString[ap->length - 1] >> 63) & 1) {
@@ -136,46 +123,46 @@ ApInt *apint_lshift(ApInt *ap) {
 }
 
 ApInt *apint_lshift_n(ApInt *ap, unsigned n) {
-	/* TODO: implement */
 	assert(ap != NULL);
 
-	int indexShift = n / 64;
+	int arrShift = n / 64;
 	int modShift = n % 64;
 
-	size_t newLength;
+	size_t lsLength = 0;
 
-	if (((ap->bitString)[ap->length - 1] >> (64 - modShift)) != 0) {
-		newLength = ap->length + indexShift + 1;
+	if (modShift == 0) {
+		lsLength = ap->length + arrShift;
+	} else if ((ap->bitString[ap->length - 1] >> (64 - modShift)) != 0) {
+		lsLength = ap->length + arrShift + 1;
 	} else {
-		newLength = ap->length + indexShift;
+		lsLength = ap->length + arrShift;
 	}
 
-	ApInt * newAp = malloc(sizeof(ApInt));
-	newAp->bitString = (uint64_t *) malloc(sizeof(uint64_t) * newLength);
-	newAp->length = newLength;
-
-	// Fill LS array elements w/ 0 for >64 shifts
-	for (int i = 0; i < indexShift; i++) {
-		(newAp->bitString)[i] = 0;
+	ApInt * ls = malloc(sizeof(ApInt));
+	ls->bitString = malloc(sizeof(uint64_t) * lsLength);
+	ls->length = lsLength;
+	
+	for(int i = 0; i < arrShift; i++) {
+		ls->bitString[i] = 0UL;
 	}
 
-	uint64_t msb = (ap->bitString)[0] >> (64 - modShift);
-	(newAp->bitString)[indexShift] = (ap->bitString)[0] << modShift;
+	uint64_t msb = 0;
 
-	for (unsigned i = 1; i < ap->length; i++) {
-		(newAp->bitString)[indexShift + i] = ((ap->bitString)[i] << modShift) | msb;
-		msb = (ap->bitString[i] >> (64 - modShift));
+	for (unsigned i = 0; i < ap->length; i++) {
+		ls->bitString[arrShift + i] = (ap->bitString[i] << modShift) | msb;
+		if (modShift) {
+			msb = ap->bitString[i] >> (64 - modShift);
+		}
 	}
 
-	if (newAp->length > ap->length + indexShift) {
-		newAp->bitString[ap->length + indexShift] = msb;
+	if (ls->length > ap->length + arrShift) {
+		ls->bitString[ap->length + arrShift] = msb;
 	}
 
-	return newAp;
+	return ls;
 }
 
 char *apint_format_as_hex(ApInt *ap) {
-	/* TODO: implement */
 	assert(ap != NULL);
 
 	int isZero = 0;
@@ -219,7 +206,6 @@ char *apint_format_as_hex(ApInt *ap) {
 }
 
 ApInt *apint_add(const ApInt *a, const ApInt *b) {
-	/* TODO: implement */
 	assert(a != NULL && b != NULL);
 
 	size_t sumLength;
@@ -381,7 +367,6 @@ ApInt *apint_sub(const ApInt *a, const ApInt *b) {
 }
 
 int apint_compare(const ApInt *left, const ApInt *right) {
-	/* TODO: implement */
 	assert(left != NULL && right != NULL);
 
 	if (left->length > right->length) {
