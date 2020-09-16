@@ -1,6 +1,9 @@
 /*
  * Unit tests for arbitrary-precision integer data type
  *
+ * Danny Lee
+ * jlee692@jhu.edu
+ * 
  * These tests are by no means comprehensive.  You will need to
  * add more tests of your own!  In particular, make sure that
  * you have tests for more challenging situations, such as
@@ -23,6 +26,7 @@ typedef struct {
 	ApInt *ap110660361;
 	ApInt *max1;
 
+	ApInt *hex0;
 	ApInt *hex97;
 	ApInt *hex3500;
 	ApInt *hexLower3500;
@@ -34,6 +38,7 @@ typedef struct {
 	ApInt *hex3Max;
 	ApInt *hex4Long;
 	ApInt *hexPadded;
+	ApInt *hexPadded0;
 
 	ApInt *compare1;
 	ApInt *compare2;
@@ -89,6 +94,7 @@ TestObjs *setup(void) {
 	objs->ap110660361 = apint_create_from_u64(110660361UL);
 	objs->max1 = apint_create_from_u64(0xFFFFFFFFFFFFFFFFUL);
 
+	objs->hex0 = apint_create_from_hex("0");
 	objs->hex97 = apint_create_from_hex("61");
 	objs->hex3500 = apint_create_from_hex("DAC");
 	objs->hexLower3500 = apint_create_from_hex("dac");
@@ -100,6 +106,7 @@ TestObjs *setup(void) {
 	objs->hex3Max = apint_create_from_hex("ffffffffffffffffffffffffffffffffffffffffffffffff");
 	objs->hex4Long = apint_create_from_hex("6938ab6214a1991c3954a0c75128cca33bd8abcb8f483ce810ecafa0a740dbbc");
 	objs->hexPadded = apint_create_from_hex("00000000000000000000000000000000000cafe");
+	objs->hexPadded0 = apint_create_from_hex("00000000000000000");
 
 	objs->compare1 = apint_create_from_hex("30becde045ba9613ca2edc7b2d3247add56bfa160ff359b8bbb192441");
 	objs->compare2 = apint_create_from_hex("6773cb839cdcda49b6b22546ece507ad877571e607dbd385dd2af7");
@@ -116,6 +123,7 @@ void cleanup(TestObjs *objs) {
 	apint_destroy(objs->ap110660361);
 	apint_destroy(objs->max1);
 
+	apint_destroy(objs->hex0);
 	apint_destroy(objs->hex97);
 	apint_destroy(objs->hex3500);
 	apint_destroy(objs->hexLower3500);
@@ -127,6 +135,7 @@ void cleanup(TestObjs *objs) {
 	apint_destroy(objs->hex3Max);
 	apint_destroy(objs->hex4Long);
 	apint_destroy(objs->hexPadded);
+	apint_destroy(objs->hexPadded0);
 
 	apint_destroy(objs->compare1);
 	apint_destroy(objs->compare2);
@@ -293,6 +302,8 @@ void testCompare(TestObjs *objs) {
 
 void testCreateFromHex(TestObjs *objs) {
 	// Less than 16 chars
+	ASSERT(0UL == apint_get_bits(objs->hex0, 0));
+	ASSERT(0UL == apint_get_bits(objs->hexPadded0, 0));
 	ASSERT(97UL == apint_get_bits(objs->hex97, 0));
 
 	// Accepts lowercase, uppercase, and mixed
@@ -321,6 +332,8 @@ void testFormatAsHex(TestObjs *objs) {
 	free(s);
 	ASSERT(0 == strcmp("ffffffffffffffff", (s = apint_format_as_hex(objs->max1))));
 	free(s);
+	ASSERT(0 == strcmp("0", (s = apint_format_as_hex(objs->hex0))));
+	free(s);
 
 	// Testing longer than 16 chars
 	ASSERT(0 == strcmp("8a0293cbb55226d7c", 
@@ -336,8 +349,11 @@ void testFormatAsHex(TestObjs *objs) {
 		(s = apint_format_as_hex(objs->hex3Long))));
 	free(s);
 
-	// Testing that there are no leading zeroes
+	// Test remove padded zeros
 	ASSERT(0 == strcmp("cafe", (s = apint_format_as_hex(objs->hexPadded))));
+	free(s);
+
+	ASSERT(0 == strcmp("0", (s = apint_format_as_hex(objs->hexPadded0))));
 	free(s);
 }
 

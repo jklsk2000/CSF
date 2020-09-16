@@ -1,5 +1,7 @@
 /*
  * CSF Assignment 1
+ * Danny Lee
+ * jlee692@jhu.edu
  * Arbitrary-precision integer data type
  * Header file
  */
