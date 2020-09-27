@@ -18,5 +18,8 @@ countToN : countToN.o
 countToNInc : countToNInc.o
 	$(CC) $(LDFLAGS) -o $@ countToNInc.o
 
+isDiv4 : isDiv4.o
+	$(CC) $(LDFLAGS) -o $@ isDiv4.o
+
 clean :
 	rm -f $(EXES) *.o

@@ -1,3 +1,9 @@
+/*
+ * Danny (Jaekyun) Lee
+ * jlee692@jhu.edu
+ * Computer Systems Fundamentals
+*/
+
 // Unit tests for hex functions
 // These tests should work for both your C implementations and your
 // assembly language implementations
@@ -50,6 +56,12 @@ void testFormatOffset(TestObjs *objs) {
   char buf[16];
   hex_format_offset(1L, buf);
   ASSERT(0 == strcmp(buf, "00000001"));
+
+  hex_format_offset(15L, buf);
+  ASSERT(0 == strcmp(buf, "0000000f"));
+
+  hex_format_offset(255L, buf);
+  ASSERT(0 == strcmp(buf, "000000ff"));
 }
 
 void testFormatByteAsHex(TestObjs *objs) {
