@@ -96,7 +96,7 @@ void hex_format_byte_as_hex(long byteval, char sbuf[]) {
  *      characters, a dot.
  */
 long hex_to_printable(long byteval) {
-    if ((byteval >= 0 && byteval <= 31) || (byteval >= 127 && byteval <= 255)) {
+    if (byteval <= 31 || byteval >= 127) {
         byteval = 46;
     }
     return byteval;

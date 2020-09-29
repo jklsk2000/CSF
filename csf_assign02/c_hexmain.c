@@ -39,23 +39,25 @@ int offset(char *hexDump, long index, long position) {
  *      index: index that keeps track of the position in hexDump array
  *      data_buf[]: char array that holds upto 16 chars that were read
  *                  from stdin
+ *      data_len: length of data_buf array
  * Returns:
  *      int value that represents the new index on hexDump
  */
-int convertToHex(char *hexDump, long index, char data_buf[]) {
+int convertToHex(char *hexDump, long index, char data_buf[], long data_len) {
     char sbuf[2] = {0};
     int end = 0;
 
+    if (data_len < 16) {
+        end = 1;
+    }
+
     for (int i = 0; i < 16; i++) {
         hexDump[index++] = ' ';
-        if (data_buf[i] == '\0') {
-            end = 1;
-        }
-        if (end == 0) {
+        if (end == 0 || i < data_len) {
             hex_format_byte_as_hex(data_buf[i], sbuf);
             hexDump[index++] = sbuf[0];
             hexDump[index++] = sbuf[1];
-        } else if (end == 1) {
+        } else if (end == 1 && i >= data_len) {
             hexDump[index++] = ' ';
             hexDump[index++] = ' ';
         }
@@ -74,14 +76,18 @@ int convertToHex(char *hexDump, long index, char data_buf[]) {
  *      index: index that keeps track of the position in hexDump array
  *      data_buf[]: char array that holds upto 16 chars that were read
  *                  from stdin
+ *      data_len: length of data_buf array
  * Returns:
  *      int value that represents the new index on hexDump
  */
-int convertToPrintable(char *hexDump, long index, char data_buf[]) {
+int convertToPrintable(char *hexDump, long index, char data_buf[], long data_len) {
     hexDump[index++] = ' ';
     hexDump[index++] = ' ';
 
-    for (int i = 0; data_buf[i] != '\0'; i++) {
+    for (int i = 0; i < 16; i++) {
+        if (i >= data_len) {
+            break;
+        }
         hexDump[index++] = hex_to_printable(data_buf[i]);
     }
 
@@ -91,7 +97,7 @@ int convertToPrintable(char *hexDump, long index, char data_buf[]) {
 }
 
 int main(void) {
-    char hexDump[78];
+    char hexDump[78] = {0};
     char data_buf[17] = {0};
     long data_len = 0;
     long index = 0;
@@ -103,11 +109,12 @@ int main(void) {
         data_buf[data_len] = '\0';
         index = offset(hexDump, index, position);
         position += 16;
-        index = convertToHex(hexDump, index, data_buf);
-        index = convertToPrintable(hexDump, index, data_buf);
+        index = convertToHex(hexDump, index, data_buf, data_len);
+        index = convertToPrintable(hexDump, index, data_buf, data_len);
         hex_write_string(hexDump);
         data_len = hex_read(data_buf);
         index = 0;
     }
 
+    return 0;
 }

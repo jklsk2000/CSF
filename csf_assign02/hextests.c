@@ -16,14 +16,14 @@
 // test fixture object
 typedef struct {
   char test_data_1[16];
-  char test_data_2[64];
+  char test_data_2[16];
 } TestObjs;
 
 // setup function (to create the test fixture)
 TestObjs *setup(void) {
   TestObjs *objs = malloc(sizeof(TestObjs));
   strcpy(objs->test_data_1, "Hello, world!\n");
-  strcpy(objs->test_data_2, "hello\nthere\n .");
+  strcpy(objs->test_data_2, "hello\nthere\n .\0€");
   return objs;
 }
 
@@ -117,6 +117,10 @@ void testFormatByteAsHex(TestObjs *objs) {
   // .
   hex_format_byte_as_hex(objs->test_data_2[13], buf);
   ASSERT(0 == strcmp(buf, "2e"));
+
+  // \0
+  hex_format_byte_as_hex(objs->test_data_2[14], buf);
+  ASSERT(0 == strcmp(buf, "00"));
 }
 
 void testHexToPrintable(TestObjs *objs) {
@@ -129,4 +133,6 @@ void testHexToPrintable(TestObjs *objs) {
   ASSERT('!' == hex_to_printable(objs->test_data_1[12]));
 
   ASSERT('.' == hex_to_printable(objs->test_data_2[13]));
+  ASSERT('.' == hex_to_printable(objs->test_data_2[14]));
+  ASSERT('.' == hex_to_printable(objs->test_data_2[15]));
 }
