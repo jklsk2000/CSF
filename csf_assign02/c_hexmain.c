@@ -2,7 +2,7 @@
  * Danny (Jaekyun) Lee
  * jlee692@jhu.edu
  * Computer Systems Fundamentals
-*/
+ */
 
 // C implementation of hexdump main function
 

@@ -2,7 +2,7 @@
  * Danny (Jaekyun) Lee
  * jlee692@jhu.edu
  * Computer Systems Fundamentals
-*/
+ */
 
 // Unit tests for hex functions
 // These tests should work for both your C implementations and your

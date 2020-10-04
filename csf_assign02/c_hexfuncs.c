@@ -2,7 +2,7 @@
  * Danny (Jaekyun) Lee
  * jlee692@jhu.edu
  * Computer Systems Fundamentals
-*/
+ */
 
 // C implementation of hexdump functions
 
@@ -53,9 +53,9 @@ void hex_format_offset(long offset, char sbuf[]) {
     for (int i = 7; i >= 0; i--) {
         int hex = offset & 0xf;
         if (hex >= 0 && hex <= 9) {
-            sbuf[i] = hex + '0';
+            sbuf[i] = (unsigned char) (hex + '0');
         } else if (hex >= 10 && hex <= 15) {
-            sbuf[i] = (char) (hex + 87);
+            sbuf[i] = (unsigned char) (hex + 87);
         }
         offset >>= 4;
     }
@@ -76,9 +76,9 @@ void hex_format_byte_as_hex(long byteval, char sbuf[]) {
     for (int i = 1; i >= 0; i--) {
         int hex = byteval & 0xf;
         if (hex >= 0 && hex <= 9) {
-            sbuf[i] = hex + '0';
+            sbuf[i] = (unsigned char) hex + '0';
         } else if (hex >= 10 && hex <= 15) {
-            sbuf[i] = (char) (hex + 87);
+            sbuf[i] = (unsigned char) (hex + 87);
         }
         byteval >>= 4;
     }

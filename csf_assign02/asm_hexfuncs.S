@@ -1,3 +1,9 @@
+/*
+ * Danny (Jaekyun) Lee
+ * jlee692@jhu.edu
+ * Computer Systems Fundamentals
+ */
+
 /* Assembly language implementation of hexdump functions */
 
 	.section .rodata
